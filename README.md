@@ -1,22 +1,36 @@
 # QDB - Quantum Database Backup
 
-A CLI tool for creating post-quantum encrypted Supabase database backups that are automatically emailed to recipients.
+A universal CLI tool for creating post-quantum encrypted database backups that are automatically emailed to recipients. Supports Supabase, MongoDB, MySQL, and PostgreSQL.
 
 ## Features
 
 - 🔐 **Post-Quantum Encryption**: Uses `@profullstack/post-quantum-helper` for quantum-resistant encryption
-- 💾 **Automated Backups**: Seamlessly integrates with Supabase CLI to create database dumps
+- 🗄️ **Multi-Database Support**: Works with Supabase, MongoDB, MySQL, and PostgreSQL
+- 💾 **Automated Backups**: Seamlessly integrates with native database CLIs
+- 🔄 **Full Restore**: Decrypt and restore backups to any supported database
 - 📧 **Email Delivery**: Automatically sends encrypted backups via email
 - 🔒 **Secure Key Management**: You control your encryption keys - they're never stored or shared
 - 📦 **Compressed Archives**: Creates ZIP archives before encryption for efficient storage
 - 🧹 **Clean Workflow**: Automatically cleans up intermediate files
 
+## Supported Databases
+
+| Database | CLI Tool | Backup Command | Restore Command |
+|----------|----------|----------------|-----------------|
+| Supabase | `pnpx supabase` | `db dump` | `db reset` |
+| MongoDB | `mongodump` | `mongodump --archive` | `mongorestore --archive` |
+| MySQL | `mysqldump` | `mysqldump` | `mysql` |
+| PostgreSQL | `pg_dump` | `pg_dump --format=custom` | `pg_restore` |
+
 ## Prerequisites
 
 - Node.js 20 or newer
-- Supabase CLI installed (`pnpm add -g supabase`)
-- A Supabase project initialized in your directory
 - SMTP credentials for email delivery
+- At least one database CLI installed:
+  - **Supabase**: `pnpm add -g supabase`
+  - **MongoDB**: [MongoDB Database Tools](https://www.mongodb.com/try/download/database-tools)
+  - **MySQL**: [MySQL Client](https://dev.mysql.com/downloads/mysql/)
+  - **PostgreSQL**: [PostgreSQL Client](https://www.postgresql.org/download/)
 
 ## Installation
 
@@ -98,40 +112,74 @@ For Gmail SMTP, use an [App Password](https://support.google.com/accounts/answer
 
 ### Create an Encrypted Backup
 
+#### Supabase (Default)
+
 ```bash
+# Using saved configuration
+qdb backup
+
+# With explicit options
 qdb backup \
   --email recipient@example.com \
   --keys ./keys.json \
   --db-name mydb
 ```
 
-#### Options
-
-- `-e, --email <email>` - Recipient email address (required)
-- `-k, --keys <path>` - Path to keys.json file (required)
-- `-d, --db-name <name>` - Database name for filename (required)
-- `-w, --work-dir <path>` - Working directory for backups (default: `./backups`)
-- `--keep-files` - Keep intermediate SQL and ZIP files (default: false)
-- `--no-email` - Skip sending email, only create encrypted backup
-
-#### Example with Options
+#### MongoDB
 
 ```bash
-# Create backup and keep intermediate files
 qdb backup \
+  --provider mongodb \
   --email admin@example.com \
   --keys ./keys.json \
-  --db-name production \
-  --work-dir ./my-backups \
-  --keep-files
-
-# Create backup without sending email
-qdb backup \
-  --email admin@example.com \
-  --keys ./keys.json \
-  --db-name staging \
-  --no-email
+  --db-name mydb \
+  --uri mongodb://localhost:27017
 ```
+
+#### MySQL
+
+```bash
+qdb backup \
+  --provider mysql \
+  --email admin@example.com \
+  --keys ./keys.json \
+  --db-name mydb \
+  --host localhost \
+  --port 3306 \
+  --user root \
+  --password mypassword
+```
+
+#### PostgreSQL
+
+```bash
+qdb backup \
+  --provider postgres \
+  --email admin@example.com \
+  --keys ./keys.json \
+  --db-name mydb \
+  --host localhost \
+  --port 5432 \
+  --user postgres \
+  --password mypassword
+```
+
+#### Backup Options
+
+- `-e, --email <email>` - Recipient email address
+- `-k, --keys <path>` - Path to keys.json file
+- `-d, --db-name <name>` - Database name for filename
+- `-p, --provider <name>` - Database provider (supabase, mongodb, mysql, postgres)
+- `-w, --work-dir <path>` - Working directory for backups (default: `./backups`)
+- `--keep-files` - Keep intermediate files (default: false)
+- `--no-email` - Skip sending email
+
+**Provider-Specific Options**:
+- `--host <host>` - Database host (MySQL, PostgreSQL)
+- `--port <port>` - Database port (MySQL, PostgreSQL)
+- `--user <user>` - Database user (MySQL, PostgreSQL)
+- `--password <password>` - Database password (MySQL, PostgreSQL)
+- `--uri <uri>` - Connection URI (MongoDB)
 
 ### Decrypt a Backup
 

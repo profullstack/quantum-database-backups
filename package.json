@@ -1,6 +1,6 @@
 {
   "name": "@profullstack/quantum-database-backups",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI tool for creating post-quantum encrypted Supabase database backups",
   "type": "module",
   "main": "src/cli.js",
