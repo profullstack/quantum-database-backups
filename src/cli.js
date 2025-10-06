@@ -324,6 +324,78 @@ program
       process.exit(1);
     }
   });
+/**
+ * Restore command - Decrypt and restore an encrypted backup to database
+ */
+program
+  .command('restore')
+  .description('Decrypt and restore an encrypted backup to database')
+  .requiredOption('-i, --input <path>', 'Path to encrypted backup file')
+  .requiredOption('-k, --keys <path>', 'Path to keys.json file')
+  .option(
+    '-p, --provider <name>',
+    'Database provider (supabase, mongodb, mysql, postgres)',
+    'supabase'
+  )
+  .option('--host <host>', 'Database host')
+  .option('--port <port>', 'Database port')
+  .option('--user <user>', 'Database user')
+  .option('--password <password>', 'Database password')
+  .option('--database <name>', 'Database name')
+  .option('--uri <uri>', 'Database connection URI (MongoDB)')
+  .option('--drop', 'Drop existing data before restore (MongoDB/PostgreSQL)')
+  .option('--clean', 'Clean database before restore (PostgreSQL)')
+  .action(async (options) => {
+    try {
+      console.log('🔄 Starting database restore...\n');
+
+      // Load encryption keys
+      console.log('📋 Loading encryption keys...');
+      const keysPath = getAbsolutePath(options.keys);
+      const keys = await loadKeys(keysPath);
+      console.log('✓ Keys loaded successfully\n');
+
+      // Prepare provider options
+      const providerOptions = {
+        host: options.host,
+        port: options.port ? parseInt(options.port, 10) : undefined,
+        user: options.user,
+        password: options.password,
+        database: options.database,
+        uri: options.uri,
+        drop: options.drop || false,
+        clean: options.clean || false,
+      };
+
+      // Remove undefined values
+      Object.keys(providerOptions).forEach((key) => {
+        if (providerOptions[key] === undefined) {
+          delete providerOptions[key];
+        }
+      });
+
+      // Import restore module
+      const { restoreFromBackup } = await import('./restore.js');
+
+      // Restore the backup
+      const inputPath = getAbsolutePath(options.input);
+      await restoreFromBackup(
+        inputPath,
+        keys,
+        options.provider,
+        providerOptions
+      );
+
+      console.log('✅ Restore completed successfully!');
+      console.log(
+        `📦 Database restored from: ${path.basename(options.input)}`
+      );
+    } catch (error) {
+      console.error('\n❌ Error:', error.message);
+      process.exit(1);
+    }
+  });
+
 
 /**
  * Info command - Display configuration and status

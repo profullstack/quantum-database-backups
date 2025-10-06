@@ -180,6 +180,72 @@ qdb backup \
 - `--user <user>` - Database user (MySQL, PostgreSQL)
 - `--password <password>` - Database password (MySQL, PostgreSQL)
 - `--uri <uri>` - Connection URI (MongoDB)
+### Restore from Encrypted Backup
+
+#### Supabase
+
+```bash
+qdb restore \
+  --input ./backups/backup.encrypted \
+  --keys ./keys.json \
+  --provider supabase
+```
+
+#### MongoDB
+
+```bash
+qdb restore \
+  --input ./backups/backup.encrypted \
+  --keys ./keys.json \
+  --provider mongodb \
+  --uri mongodb://localhost:27017 \
+  --database mydb \
+  --drop
+```
+
+#### MySQL
+
+```bash
+qdb restore \
+  --input ./backups/backup.encrypted \
+  --keys ./keys.json \
+  --provider mysql \
+  --host localhost \
+  --port 3306 \
+  --user root \
+  --password mypassword \
+  --database mydb
+```
+
+#### PostgreSQL
+
+```bash
+qdb restore \
+  --input ./backups/backup.encrypted \
+  --keys ./keys.json \
+  --provider postgres \
+  --host localhost \
+  --port 5432 \
+  --user postgres \
+  --password mypassword \
+  --database mydb \
+  --clean
+```
+
+#### Restore Options
+
+- `-i, --input <path>` - Path to encrypted backup file (required)
+- `-k, --keys <path>` - Path to keys.json file (required)
+- `-p, --provider <name>` - Database provider (supabase, mongodb, mysql, postgres) (default: supabase)
+- `--host <host>` - Database host (MySQL, PostgreSQL)
+- `--port <port>` - Database port (MySQL, PostgreSQL)
+- `--user <user>` - Database user (MySQL, PostgreSQL)
+- `--password <password>` - Database password (MySQL, PostgreSQL)
+- `--database <name>` - Database name
+- `--uri <uri>` - Connection URI (MongoDB)
+- `--drop` - Drop existing data before restore (MongoDB/PostgreSQL)
+- `--clean` - Clean database before restore (PostgreSQL)
+
 
 ### Decrypt a Backup
 
